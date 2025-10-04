@@ -1,32 +1,34 @@
-# 🔍 Hibrit Öneri Sistemi (Recommendation Engine)
+# 🔍 Öneri Sistemi - Netflix ve Amazon Nasıl Yapıyor Merakım
 
-Bu proje, collaborative filtering ve content-based filtering tekniklerini birleştiren gelişmiş bir hibrit öneri sistemi sunar. Sistem, kullanıcı davranışları ve ürün özelliklerini analiz ederek kişiselleştirilmiş öneriler üretir.
+Merhaba! Bu proje, Netflix'in nasıl film önerdiğini, Amazon'un nasıl ürün önerdiğini merak etmemden doğdu. "Acaba ben de böyle bir sistem yapabilir miyim?" diye düşündüm ve işte karşınızda!
 
-## 🎯 Proje Amacı
+İki farklı yöntemi birleştirerek hibrit bir öneri sistemi yaptım. Hem kullanıcıların geçmiş davranışlarına bakıyor, hem de ürünlerin özelliklerini analiz ediyor. Böylece daha akıllı öneriler verebiliyor.
 
-- **Amaç**: Kullanıcılara kişiselleştirilmiş ürün önerileri sunmak
-- **Yöntem**: Collaborative Filtering + Content-Based Filtering hibrit yaklaşımı
-- **Hedef**: Yüksek doğruluk ve çeşitlilik ile öneri kalitesini artırmak
+## 🎯 Neden Bu Sistemi Geliştirdim?
 
-## 🚀 Hızlı Başlangıç
+- **Merakım**: E-ticaret sitelerinin öneri algoritmaları nasıl çalışıyor?
+- **Öğrenmek İstediklerim**: Collaborative filtering ve content-based filtering nedir?
+- **Hedefim**: Kullanıcıları gerçekten ilgilendirecek öneriler verebilmek
+
+## 🚀 Nasıl Çalıştırırsınız?
 
 ```bash
-# Ana öneri sistemini çalıştırın
+# Temel sistemi çalıştırmak için:
 python main.py
 
-# Detaylı açıklamalı versiyonu çalıştırın
-python main_commented.py
+# Eğer kodun nasıl çalıştığını anlamak istiyorsanız:
+python main_commented.py  # Bu versiyonda her şeyi açıkladım!
 ```
 
-## 📊 Sistem Mimarisi
+## 📊 Sistemim Nasıl Çalışıyor?
 
-### Hibrit Yaklaşım
+### İki Farklı Yaklaşımı Birleştirdim
 
-| Yöntem | Açıklama | Avantajları |
-|--------|----------|-------------|
-| **Collaborative Filtering** | Kullanıcı-ürün etkileşim matrisi | Yeni trendleri yakalar, sosyal filtreleme |
-| **Content-Based Filtering** | Ürün özelliklerine dayalı benzerlik | Cold start problemini çözer, açıklanabilir |
-| **Hibrit Kombinasyon** | İki yöntemin ağırlıklı birleşimi | Her iki yöntemin avantajlarını birleştirir |
+| Hangi Yöntem | Nasıl Çalışıyor | Neden Kullandım |
+|--------------|-----------------|-----------------|
+| **Collaborative Filtering** | "Sana benzer kullanıcılar ne aldı?" | Sosyal etkiyi yakalıyor, trendleri buluyor |
+| **Content-Based Filtering** | "Bu ürüne benzer ürünler neler?" | Yeni ürünler için de çalışıyor |
+| **Hibrit Sistem** | İkisini akıllıca birleştirdim | Her iki yöntemin güçlü yanlarını kullanıyor |
 
 ### Kullanılan Algoritmalar
 

@@ -1,35 +1,41 @@
-# ⚽ Futbol xG (Expected Goals) Modeli
+# ⚽ Futbol xG Modeli - Spor Tutkum Makine Öğrenmesiyle Buluşuyor
 
-Bu proje, futbol maçlarındaki şutların gol olma olasılığını tahmin eden gelişmiş bir makine öğrenmesi modeli sunar. Model, şut anındaki durumsal faktörlere dayalı **gol beklentisi (xG)** hesaplaması yapar.
+Merhaba! Bu proje, futbol sevgimi makine öğrenmesiyle birleştirdiğim özel bir çalışma. Futbol izlerken hep merak etmişimdir: "Bu şut gerçekten gol olmalı mıydı?" İşte bu sorunun cevabını bulmaya çalıştığım proje!
 
-## 🎯 Proje Amacı
+Bir şutun gol olma olasılığını tahmin etmeye çalışıyorum. Sadece sonuca bakmak yerine, o anki durumu analiz ediyorum: şutun nereden atıldığı, nasıl atıldığı, maçın hangi dakikasında olduğu gibi faktörleri göz önünde bulunduruyorum.
 
-- **Amaç**: Bir şutun gol olma ihtimalini öngören sınıflandırma modeli geliştirmek
-- **Kapsam**: `events.csv` veri setinden şut olaylarını analiz etme
-- **Hedef**: Oyuncu performansını hem gol oranı hem de şutlarının ortalama kalitesine (xG) göre değerlendirme
+## 🎯 Neden Bu Projeyi Yaptım?
 
-## 🚀 Hızlı Başlangıç
+- **Merakım**: Bir şutun gerçekten gol olma ihtimali neydi?
+- **Öğrenmek İstediklerim**: Futbol verilerini nasıl analiz ederim?
+- **Hedefim**: Oyuncuları sadece gol sayısıyla değil, pozisyon kalitesiyle de değerlendirmek
+
+## 🚀 Nasıl Çalıştırırsınız?
 
 ```bash
-# Modeli çalıştırın
+# Çok basit! Sadece şunu çalıştırın:
 python training.py
 ```
 
-## 📊 Model Özellikleri
+Eğer `events.csv` dosyanız yoksa, kod otomatik olarak farklı yerlerde arayacak. Ben genelde `data/` klasörüne koyuyorum.
 
-### Kullanılan Algoritma
-- **RandomForestClassifier** 
-- `n_estimators=300`
-- `min_samples_leaf=2`
-- `class_weight="balanced"`
-- `random_state=42`
+## 📊 Modelimde Neler Var?
 
-### Özellikler (Features)
+### Neden RandomForest Seçtim?
+- **RandomForestClassifier** kullandım çünkü:
+  - Overfitting'e karşı dayanıklı
+  - Feature importance verebiliyor
+  - Kategorik verilerle iyi çalışıyor
+  - `n_estimators=300` (300 ağaç, güçlü tahmin)
+  - `class_weight="balanced"` (gol/gol değil dengesizliği için)
 
-| Tip | Özellikler | Açıklama |
-|-----|------------|----------|
-| **Sayısal** | `time` | Maç zamanı |
-| **Kategorik** | `shot_place`, `shot_outcome`, `location`, `bodypart`, `assist_method`, `situation`, `fast_break` | Şut detayları |
+### Hangi Verileri Kullanıyorum?
+
+| Ne Tür Veri | Hangi Bilgiler | Neden Önemli |
+|-------------|----------------|--------------|
+| **Zaman** | `time` (maç dakikası) | Son dakikalarda daha riskli şutlar |
+| **Şut Detayları** | `shot_place`, `location`, `bodypart` | Nereden, nasıl atıldığı |
+| **Durum** | `assist_method`, `situation`, `fast_break` | Nasıl bir pozisyondu |
 
 ### Veri İşleme Pipeline
 

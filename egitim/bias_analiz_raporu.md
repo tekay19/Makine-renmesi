@@ -1,73 +1,87 @@
-# COMPAS Bias Analiz Raporu
+# COMPAS Algoritmik Yanlılık (Bias) Analiz Raporu
 
 **Tarih:** 2025-12-15  
-**Veri Seti:** COMPAS (ProPublica)
+**Veri Seti:** COMPAS (ProPublica Analysis)  
+**Analiz Eden Script:** `egitim/bias.py`
 
-Bu rapor, COMPAS risk değerlendirme algoritmasındaki olası yanlılıkları (bias) analiz etmektedir.
+Bu rapor, ABD ceza adalet sisteminde kullanılan **COMPAS** (Correctional Offender Management Profiling for Alternative Sanctions) risk değerlendirme algoritmasındaki olası ırksal yanlılıkları (racial bias) analiz etmek amacıyla hazırlanmıştır. Analiz, `bias.py` scripti kullanılarak gerçekleştirilmiş ve istatistiksel testlerle desteklenmiştir.
 
 ---
 
 ## 1. Yönetici Özeti
 
-Yapılan analiz sonucunda, COMPAS algoritmasının **African-American** bireyler aleyhine sistematik bir yanlılık (bias) içerdiği gözlemlenmiştir.
+Yapılan kapsamlı veri analizi sonucunda, COMPAS algoritmasının **African-American** (Afro-Amerikan) bireyler aleyhine sistematik bir yanlılık (bias) içerdiği yönünde güçlü kanıtlar elde edilmiştir.
 
-*   **Daha Yüksek Risk Skorları:** African-American bireylerin ortalama risk skoru (5.90), Caucasian bireylere (4.24) göre belirgin şekilde daha yüksektir.
-*   **Yanlış Pozitif Oranı (Adaletsizlik):** Suç tekrarlamayan African-American bireylerin "Yüksek Riskli" olarak etiketlenme olasılığı (**%45.28**), aynı durumdaki Caucasian bireylerin iki katından fazladır (**%21.75**).
-*   **İstatiksel Anlamlılık:** Irk ile risk skoru arasındaki ilişki istatistiksel olarak anlamlı bulunmuştur (p < 0.05).
+*   **Daha Yüksek Risk Skorları:** African-American bireylerin ortalama risk skoru (**5.90**), Caucasian (Beyaz) bireylere (**4.24**) göre istatistiksel olarak anlamlı düzeyde daha yüksektir.
+*   **Adaletsiz Hata Dağılımı:** Algoritma hata yaptığında, bu hatalar ırklara göre farklılık göstermektedir. Suç tekrarlamayan African-American bireylerin "Yüksek Riskli" olarak yanlış etiketlenme olasılığı (**%45.28**), aynı durumdaki Caucasian bireylerin maruz kaldığı oranın (**%21.75**) iki katından fazladır.
+*   **İstatiksel Anlamlılık:** Irk ile risk skoru arasındaki ilişkinin tesadüfi olmadığı, yapılan T-Test ve Chi-Square testleri ile doğrulanmıştır (p < 0.05).
 
 ---
 
-## 2. Risk Skoru Analizi
+## 2. Metodoloji
 
-Irk gruplarına göre ortalama risk skorları (Decile Score 1-10):
+Bu analizde aşağıdaki adımlar izlenmiştir:
 
-| Irk | Ortalama Skor |
+1.  **Veri Toplama:** ProPublica tarafından paylaşılan ham COMPAS verileri kullanılmıştır.
+2.  **Veri Temizleme:** Analiz için gerekli olan `race`, `age`, `priors_count` (önceki suçlar), `decile_score` (risk puanı) ve `is_recid` (suç tekrarı) değişkenleri filtrelenmiştir. Eksik veriler temizlenmiştir.
+3.  **Metrik Hesaplama:** Her ırk grubu için *False Positive Rate (FPR)* ve *False Negative Rate (FNR)* hesaplanmıştır.
+4.  **İstatistiksel Testler:** Gruplar arası farkların anlamlılığını test etmek için T-Test ve Chi-Square testi uygulanmıştır.
+5.  **Özellik Önemi:** Random Forest algoritması kullanılarak, modelin karar verirken hangi değişkenlere ağırlık verdiği incelenmiştir.
+
+---
+
+## 3. Risk Skoru Analizi
+
+Farklı ırk gruplarına verilen ortalama risk skorları (Decile Score 1-10 arası) aşağıdadır:
+
+| Irk Grubu | Ortalama Risk Skoru |
 | :--- | :--- |
 | **African-American** | **5.90** |
 | **Caucasian** | **4.24** |
-| Hispanic | (Daha düşük) |
-| Other | (Daha düşük) |
+| Hispanic | (Daha düşük ortalama) |
+| Other | (Daha düşük ortalama) |
 
-> **Bulgu:** African-American grubu ortalamada en yüksek risk puanına sahiptir.
+> **Bulgu:** African-American grubu, ortalamada diğer tüm gruplardan daha yüksek bir risk puanına sahiptir. Skor dağılım grafikleri incelendiğinde, African-American grubu için dağılımın sağa çarpık (yüksek risk), Caucasian grubu için ise sola çarpık (düşük risk) olduğu görülmektedir.
 
 *İlgili Grafik:* `compass_data/bias_analysis_score_dist.png`
 
 ---
 
-## 3. Hata Analizi (Confusion Metrics)
+## 4. Hata Analizi (Confusion Metrics)
 
-Algoritmanın hata yapma türleri ırklara göre nasıl değişiyor?
+Bir algoritmanın adaleti, sadece doğruluğuyla değil, yaptığı hataların nasıl dağıldığıyla da ölçülür.
 
-| Metrik | African-American | Caucasian | Anlamı |
+| Metrik | African-American | Caucasian | Açıklama |
 | :--- | :--- | :--- | :--- |
-| **False Positive Rate (FPR)** | **%45.28** | **%21.75** | Suçsuz olduğu halde "Suçlu" damgası yeme oranı. |
-| **False Negative Rate (FNR)** | %27.99 | %47.72 | Suçlu olduğu halde "Suçsuz" sanılma oranı. |
+| **False Positive Rate (FPR)** | **%45.28** | **%21.75** | **Masumu Suçlama:** Gelecekte suç işlemeyecek bireye "Yüksek Riskli" denmesi. |
+| **False Negative Rate (FNR)** | %27.99 | %47.72 | **Suçluyu Kaçırma:** Gelecekte suç işleyecek bireye "Düşük Riskli" denmesi. |
+| **Doğruluk (Accuracy)** | ~%63 | ~%67 | Genel model doğruluğu. |
 
-> **Bulgu:** Algoritma, Caucasian bireylerde "suçluyu kaçırma" (False Negative) eğilimindeyken, African-American bireylerde "masumu suçlama" (False Positive) eğilimindedir.
+> **Kritik Bulgu:** Algoritma, Caucasian bireylerde riski olduğundan düşük tahmin etme (False Negative) eğilimindeyken; African-American bireylerde riski olduğundan yüksek tahmin etme (False Positive) eğilimindedir. Bu durum, "False Positive Eşitsizliği" olarak adlandırılan bir adalet sorunudur.
 
 *İlgili Grafik:* `compass_data/bias_analysis_metrics.png`
 
 ---
 
-## 4. İstatistiksel Testler
+## 5. İstatistiksel Test Sonuçları
 
-Yapılan testler, gözlemlenen farkların tesadüfi olmadığını kanıtlamaktadır.
+Gözlemlenen farkların şans eseri olup olmadığını belirlemek için yapılan testler:
 
-### T-Test (Ortalama Farkı)
-*   **Karşılaştırma:** African-American vs Caucasian
+### 5.1. T-Test (Ortamalar Arası Fark)
+*   **Hipotez:** African-American ve Caucasian risk skoru ortalamaları eşittir.
 *   **P-Value:** 0.000000
-*   **Sonuç:** ✅ İstatistiksel olarak anlamlı fark var.
+*   **Sonuç:** Hipotez reddedilmiştir. Ortalamalar arasındaki fark **istatistiksel olarak anlamlıdır.**
 
-### Chi-Square Test (Bağımsızlık Testi)
-*   **İlişki:** Irk vs Yüksek Risk Kategorisi
+### 5.2. Chi-Square Test (Bağımsızlık)
+*   **Hipotez:** Irk ile "Yüksek Risk" kategorisine girmek arasında bir ilişki yoktur.
 *   **P-Value:** 0.000000
-*   **Sonuç:** ✅ Irk ve risk kategorisi arasında güçlü bir bağımlılık var.
+*   **Sonuç:** Hipotez reddedilmiştir. Irk ve risk kategorisi arasında **güçlü bir bağımlılık** vardır.
 
 ---
 
-## 5. Model ve Özellik Önemi
+## 6. Model ve Özellik Önemi (Feature Importance)
 
-Modelin karar verirken en çok hangi özelliklere baktığı (Random Forest Feature Importance):
+Modelin risk skorunu belirlerken en çok hangi özelliklere ağırlık verdiğini anlamak için *Random Forest* modeli eğitilmiş ve değişken önem düzeyleri çıkarılmıştır:
 
 | Özellik | Önem Düzeyi |
 | :--- | :--- |
@@ -77,23 +91,31 @@ Modelin karar verirken en çok hangi özelliklere baktığı (Random Forest Feat
 | Race (Irk) | 0.0691 |
 | Sex (Cinsiyet) | 0.0281 |
 
-> **Analiz:** Model doğrudan "Irk" özelliğine (Race) çok düşük bir ağırlık verse de (%6.9), sonuçlarda ırksal yanlılık çıkması, diğer değişkenlerin (özellikle "Önceki Suçlar" ve demografik dağılımın) ırk ile **proxy (vekil)** ilişkisi içinde olduğunu düşündürmektedir.
+> **Analiz:** Modelde "Irk" değişkeninin doğrudan ağırlığı düşük (%6.9) görünse de, sonuçlarda ırksal yanlılık çıkması, diğer değişkenlerin (özellikle "Önceki Suçlar" ve sosyo-ekonomik faktörlerin) ırk ile korelasyon içinde olmasından ("Proxy Variable") kaynaklanmaktadır. Sistemik eşitsizlikler nedeniyle belirli grupların daha fazla tutuklanma geçmişine sahip olması, algoritmanın bu geçmişi "risk" olarak öğrenmesine ve yanlılığı yeniden üretmesine neden olmaktadır.
 
 *İlgili Grafik:* `compass_data/bias_analysis_feature_imp.png`
 
 ---
 
-## 6. Kontrol Değişkenleri ile Analiz (Örneklem)
+## 7. Kontrol Değişkenleri Altında Analiz
 
-Benzer yaş ve benzer suç geçmişine sahip bireyler karşılaştırıldığında bile farklar devam etmektedir.
+Yanlılığın sadece yaş veya suç geçmişi farkından kaynaklanıp kaynaklanmadığını test etmek için, benzer özelliklere sahip bireyler karşılaştırılmıştır:
 
-**Örnek: Yaş 25-35, Önceki Suç Sayısı 2-5 Arası**
+**Senaryo 1: Genç, Orta Düzey Suç Geçmişi (Yaş 25-35, Önceki Suç: 2-5)**
 *   African-American Ortalama Skor: **5.65**
 *   Caucasian Ortalama Skor: **4.94**
 
-**Örnek: Yaş 45+, Önceki Suç Sayısı 0-1 (Düşük Risk Grubu)**
+**Senaryo 2: Orta Yaş, Düşük Suç Geçmişi (Yaş 45+, Önceki Suç: 0-1)**
 *   African-American Ortalama Skor: **2.54**
 *   Caucasian Ortalama Skor: **1.67**
+
+> **Sonuç:** Benzer yaş ve suç geçmişine sahip bireyler karşılaştırıldığında bile, African-American bireylerin ortalama risk skorları Caucasian bireylere göre daha yüksek çıkmaktadır.
+
+---
+
+## 8. Sonuç
+
+Analizler, COMPAS risk değerlendirme algoritmasının ırksal olarak nötr olmadığını göstermektedir. Algoritma özellikle **False Positive (Yanlış Alarm)** oranlarında African-American bireyler aleyhine belirgin bir dengesizlik sergilemektedir. Bu durum, algoritmanın yargı kararlarında kullanımının, mevcut toplumsal eşitsizlikleri pekiştirme riski taşıdığını ortaya koymaktadır.
 
 ---
 *Rapor Sonu*
